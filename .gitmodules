@@ -2,3 +2,7 @@
 	path = Matching
 	url = https://github.com/kaloinamelodie/Matching.git
 	branch = main
+[submodule "Front-Matching"]
+	path = Front-Matching
+	url = https://github.com/kaloinamelodie/Front-Matching.git
+	branch = main
