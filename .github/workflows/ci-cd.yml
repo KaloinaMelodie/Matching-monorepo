@@ -50,19 +50,19 @@ jobs:
           print(f"Chemin : {path.absolute()}")
 
           if not path.exists():
-              print("❌ Fichier introuvable")
+              print("Fichier introuvable")
               sys.exit(1)
 
           try:
               raw = path.read_text(encoding="utf-8")
-              print(f"✅ Fichier trouvé, taille = {len(raw)} octets")
+              print(f"Fichier trouvé, taille = {len(raw)} octets")
               data = json.loads(raw)
           except Exception as e:
-              print(f"❌ JSON invalide : {e}")
+              print(f"JSON invalide : {e}")
               sys.exit(1)
 
           # On log juste quelques champs non sensibles
-          print("✅ JSON valide")
+          print("JSON valide")
           print("project_id :", data.get("project_id"))
           print("client_email :", data.get("client_email"))
           PY
