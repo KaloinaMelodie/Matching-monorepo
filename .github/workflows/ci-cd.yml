@@ -37,7 +37,7 @@ jobs:
       - name: Create Vertex service account key file
         run: |
           mkdir -p Matching/keys
-          printf '%s' "${{ secrets.VERTEX_SA_JSON }}" > Matching/keys/talentmatch-2-vertex-a82db02697d9.json
+          printf '%s' "${{ vars.VERTEX_JSON }}" > Matching/keys/talentmatch-2-vertex-a82db02697d9.json
 
 
       - name: Set up Docker Buildx
