@@ -1,0 +1,65 @@
+name: Sync Submodules
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "*/5 * * * *"  
+  push:
+    paths:
+      - ".gitmodules"        
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-submodules
+  cancel-in-progress: false
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout monorepo + submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GH_TOKEN }}   # PAT avec droits écriture sur talentmatch-cicd et lecture sur sous-repos
+
+      - name: Git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      # (Optionnel) S'assure que chaque sous-module suit sa branche HEAD d'origine
+      - name: Ensure submodules track their origin HEAD branch
+        shell: bash
+        run: |
+          git submodule foreach '
+            head_branch=$(git remote show origin | sed -n "/HEAD branch/s/.*: //p");
+            echo "$name -> tracking $head_branch";
+            cd "$toplevel";
+            git config -f .gitmodules submodule.$name.branch "$head_branch"
+          '
+          git add .gitmodules || true
+
+      - name: Update submodules to latest remote commits
+        run: |
+          git submodule update --init --recursive --remote
+
+      - name: Commit & push if there are changes
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+        run: |
+          # Sur schedule/dispatch, github.ref_name peut être vide; fallback sur main
+          BRANCH=${TARGET_BRANCH:-main}
+
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add .gitmodules Matching Front-Matching
+            git commit -m "chore(submodules): bump to latest refs"
+            git push origin "$BRANCH"
+            echo "Submodules updated and pushed on $BRANCH."
+          else
+            echo "No submodule updates."
+          fi
